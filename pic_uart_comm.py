@@ -3,19 +3,11 @@ import serial as s
 import os
 import platform as plat
 import threading
+from colorama import Fore, Back, Style
 
 default_path_linux = "/dev/ttyUSB0"
 default_path_win = "COM1"
-class col:
-    HEADER = '\033[95m'
-    OKBLUE = '\033[94m'
-    OKGREEN = '\033[92m'
-    WARNING = '\033[93m'
-    FAIL = '\033[91m'
-    ENDC = '\033[0m'
-    BOLD = '\033[1m'
-    UNDERLINE = '\033[4m'
- 
+
 
 def get_data():
     global pic
@@ -23,10 +15,10 @@ def get_data():
         try:
             data = pic.readline()
         except:
-            print(col.FAIL + "Disconnected" + col.ENDC)
+            print(Fore.RED + "Disconnected")
             os._exit(os.EX_OK)
         if data:
-            print(col.OKGREEN + f">> {data}" + col.ENDC)
+            print(Fore.GREEN + f">> {data}" + Fore.RESET)
  
 
 def pic_send(x,y = 0):
@@ -40,29 +32,29 @@ def pic_send(x,y = 0):
 def init():
     global pic
     if plat.system() ==  'Linux':
-        print(col.OKBLUE + "You are on Linux" + col.ENDC) 
-        path = input(col.OKGREEN + f"Input path to USB2UART module [Default is {default_path_linux}]\n" + col.ENDC)
+        print(Fore.BLUE + "You are on Linux") 
+        path = input(Fore.GREEN + f"Input path to USB2UART module [Default is {default_path_linux}]\n")
         
         if path == '':
             path = default_path_linux
 
     else:   # must be Windows
-        print(col.OKBLUE + "You are on Windows" + col.ENDC) 
-        path = input(col.OKGREEN + f"Input path to USB2UART module [Default is {default_path_win}]\n" + col.ENDC)
+        print(Fore.BLUE + "You are on Windows") 
+        path = input(Fore.GREEN + f"Input path to USB2UART module [Default is {default_path_win}]\n")
         
         if path == '':
-            path = default_path_linux
+            path = default_path_win
         
 
     try:
         pic = s.Serial(path, 115200, timeout=.1)
     except:
-        print(col.FAIL + f"Nothing on {path}, exiting..." + col.ENDC)  
+        print(Fore.RED + f"Nothing on {path}, exiting...")  
         os._exit(os.EX_OK)     
 
  
     t.sleep(0.1)
-    print(col.OKGREEN + "INIT DONE!" + col.ENDC)
+    print(Fore.GREEN + "INIT DONE!" + Fore.RESET)
 
 
 def menu_and_choice():
