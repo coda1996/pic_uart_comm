@@ -4,13 +4,26 @@ import os
 import platform as plat
 import threading
 from colorama import Fore, Back, Style
+import math as m
 
 default_path_linux = "/dev/ttyUSB0"
-default_path_win = "COM1"
+default_path_win = "COM22"
+
+# -----------------  Comm ----------------- #
+stop_msg = 109  # 'm'
+start_msg = 77  # 'M'
+get_data_stop = 0
+
+
+
+def int16_to_int(x):
+    tmp1 = m.floor(x/256)
+    tmp2 = x%256
+    return tmp1, tmp2
 
 
 def get_data():
-    global pic
+    global pic, get_data_stop
     while True:
         try:
             data = pic.readline()
@@ -18,7 +31,8 @@ def get_data():
             print(Fore.RED + "Disconnected")
             os._exit(os.EX_OK)
         if data:
-            print(Fore.GREEN + f">> {data}" + Fore.RESET)
+            if get_data_stop != 1:
+                print(Fore.GREEN + f">> {data}" + Fore.RESET)
  
 
 def pic_send(x,y = 0):
@@ -26,7 +40,6 @@ def pic_send(x,y = 0):
     pic.write(chr(x).encode('charmap'))
     if y:
         print(f"SENT > {x}")
-
 
 
 def init():
@@ -58,31 +71,60 @@ def init():
 
 
 def menu_and_choice():
-    print("\n\n0. tst")
-    print("1. tst1")
-    print("2. tst2")
-    print("3. tst3")
+    global get_data_stop
+    print("\n\n1. START")
+    print("2. STOP")
+    print("3. PID set")
+    print("4. Set speed")
+
     
    
     choice = int(input(">> "))
  
-    if choice == 0:
-        tst()
- 
-    elif choice == 1:
-        pic_send(65)
-        pic_send(66)
-        pic_send(67)
+    if choice == 1:
+        pic_send(start_msg)
+
+        speed = int(input("Input speed [0 - 6000]"))
+        tmp1, tmp2 = int16_to_int(speed)
+        pic_send(tmp1)
+        pic_send(tmp2)
+
  
     elif choice == 2:
-        pic_send(65)
-        pic_send(66)
-        pic_send(67)
+        pic_send(stop_msg)   # 'm'
  
     elif choice == 3:
-        pic_send(65)
-        pic_send(66)
-        pic_send(67)
+        get_data_stop = 1
+        what_pid = int(input("1. Kp\n2. Ki\n3. Kd"))
+        if what_pid == 1:
+            new_kp = int(input("Input Kp\n")) 
+            tmp1, tmp2 = int16_to_int(new_kp)
+            pic_send(112)
+            pic_send(tmp1)
+            pic_send(tmp2)
+
+        elif what_pid == 2:
+            new_ki = int(input("Input Ki\n")) 
+            tmp1, tmp2 = int16_to_int(new_ki)
+            pic_send(105)
+            pic_send(tmp1)
+            pic_send(tmp2)
+
+        elif what_pid == 3:
+            new_kd = int(input("Input Kd\n")) 
+            tmp1, tmp2 = int16_to_int(new_kd)
+            pic_send(100)
+            pic_send(tmp1)
+            pic_send(tmp2)
+        get_data_stop = 0
+
+    elif choice == 4:
+        pic_send(115)
+        what_speed = int(input("What speed?"))
+        tmp1, tmp2 = int16_to_int(what_speed)
+        pic_send(tmp1)
+        pic_send(tmp2)
+
 
 
 init()
